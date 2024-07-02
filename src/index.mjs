@@ -1,82 +1,39 @@
-import express, { request, response } from "express";
+import express from "express";
+import { query, validationResult } from "express-validator";
+import { mockUsers } from "../constant/constatnt.mjs";
+import router from "./user.mjs";
 
 const app = express();
-app.use(express.json())
+app.use(express.json());
+app.use(router);
 
+const findIndexUserById = (request, response, next) => {
+  const {
+    params: { id },
+  } = request;
 
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) return response.sendStatus(400);
 
-const mockUsers = [
-        { id: "1", age: 20,  userName:"joseph", displayName:"Joseph" },
-        { id: "2", age: 200, userName:"paul", displayName:"Paul" },
-        { id: "3", age: 209, userName:"john", displayName:"John" },
-        { id: "4", age: 204, userName:"peter", displayName:"Peter" },
-        { id: "4", age: 204, userName:"peter", displayName:"Peter" },
-        { id: "5", age: 203, userName:"simon", displayName:"Simon" },
-        { id: "6", age: 220, userName:"joy", displayName:"Joy" },
-        { id: "7", age: 210, userName:"prince", displayName:"Prince" }
-]
+  const foundeUserIndex = mockUsers?.findIndex((user) => user?.id === parsedId);
+  console.log(foundeUserIndex);
+  if (foundeUserIndex === -1) return response.sendStatus(400);
 
+  request.foundeUserIndex = foundeUserIndex;
 
-app.get('/', (request, response) => {
-    response.status(200).send({msg: "hello world of express"})
-})
+  next();
+};
 
-app.get('/api/users', (request, response) => {
-    console.log(request.query)
+app.post("/api/users");
 
-    const { query: { filter, value } } = request
-    if (!filter && !value) return response.send(mockUsers)
-    if (filter && value) return response.send(mockUsers.filter((user) => user[filter].includes(value)))
-    
-    return response.send(mockUsers)
+app.get("/api/users/:id");
 
-})
+app.put("/api/users/:id");
 
+app.patch("/api/users/:id");
 
-app.get("/api/users/:id", (request, response) => {
-    console.log(request.params)
-    
-    const parsedId = parseInt(request.params.id);
-    if (isNaN(parsedId)) return response.status(400).send({ msg: "Bad request. Invalide ID"})   
-        
-        const findUser = mockUsers.find((user) => user.id === parsedId);
-        if (!findUser) return response.sendStatus(404)
-            
-            return response.send(findUser)
-        })
-        
-        app.post("/api/users", (request, response) => {
-            console.log(request.body);
-        
-            const { body } = request;
-            const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body }
-            mockUsers.push(newUser)
-            return response.status(201).send(newUser)
-        })
+app.delete("/api/users/:id");
 
-            app.put("/api/users", (request, response) => {
-            console.log(request.body);
-        
-                const { body, params: { id } } = request;
-                
-                const parsedId = parent(id);
-                if (isNaN(parsedId)) return response.sendStatus(400)
-                
-                const foundeUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
-                if (foundeUserIndex === -1) return response.sendStatus(400)
-                mockUsers[foundeUserIndex] = {id:parsedId, ...body}
+const port = process.env.PORT || 3000;
 
- 
-            return response.status(201).send(newUser)
-        })
-
-
-
-
-
-
-
-        
-        const port = process.env.PORT || 3000
-        
-        app.listen(port, () => console.log(`Running on localHost: ${port}`));  
+app.listen(port, () => console.log(`Running on localHost: ${port}`));
